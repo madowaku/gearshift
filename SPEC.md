@@ -4,7 +4,7 @@
 
 個人ゲーム開発では、同じ「コード変更」でもUIの文言修正とセーブ形式の変更では必要な推論量も検証も違います。モデル選択を単なる難易度で決めると、ゲーム状態、物理挙動、入力感、視覚品質といった失敗モードを見落とします。
 
-Codex Gearshiftはタスクをゲーム開発固有の軸で分解し、十分だが過剰ではないモデルプロファイル、推論レベル、検証シーケンスを推薦します。
+Codex Gearshiftはタスクをゲーム開発固有の軸で分解し、制作者には次の行動と検証シーケンスを提示します。モデルプロファイルと推論レベルは、その支援を成立させる内部ルーティングとして扱います。
 
 ## 2. Target user and primary flow
 
@@ -27,17 +27,22 @@ Codex Gearshiftはタスクをゲーム開発固有の軸で分解し、十分�
 
 | Field | Values / shape |
 | --- | --- |
-| Task category | Gameplay, UI, Scene, Save, Input, Physics, Audio, AI, Performance, Export, Visual Polish |
-| Complexity | low / medium / high |
-| Change scope | low / medium / high |
-| State risk | low / medium / high |
-| Save compatibility impact | low / medium / high |
-| Visual check | yes / no |
-| Playtest | yes / no |
+| Task categories | Gameplay, UI, Scene, SaveLoad, Input, Physics, Audio, AI, Performance, Export, VisualPolish, Tooling（複数可） |
+| Risks | implementation / game state / save compatibility / regression を Low / Medium / High で評価 |
+| Verification flags | automated tests / playtest / visual / save migration / export |
 | Model profile | fast / balanced / deep |
 | Reasoning level | low / medium / high |
+| Explainability | matched signals / reasons / confidence / escalation conditions |
 | Verification | 順序付きの具体的手順 |
-| Rationale | 判定根拠の短い箇条書き |
+| Workflow guidance | 制作者向けの進め方、短い説明、最初の具体的行動 |
+
+### Presentation policy
+
+- 表側の主役は「そのまま進める / 確認しながら進める / 退避して慎重に進める」とする
+- 最初に行う具体的な一手を、リスク説明より先に表示する
+- `fast / balanced / deep`、reasoning、confidenceは観測可能な内部情報として小さく残す
+- profileを選ぶこと自体をユーザーへ要求しない
+- deepでは恐怖を煽らず、退避・再現・分割という戻れる手順を示す
 
 ### Routing policy
 
@@ -67,6 +72,21 @@ MVPは説明可能な決定論的ルールを主系とします。カテゴリ�
 3. 視覚確認/プレイテストの必要性
 4. 複雑度
 5. コストを抑える方向へのギア調整
+
+### M1 rule table
+
+| Signal / combination | Route | Main checks |
+| --- | --- | --- |
+| 局所的な文言、色、音声asset | fast | visualまたはplaytest |
+| scene追加、入力機能、physics、AI、performance、export | balanced | 対象別のtests/playtest/export |
+| セーブ形式、schema、migration、互換性 | deepへ強制昇格 | migration、旧save読込、round trip |
+| 中核のターン/phase/state遷移 | deepへ強制昇格 | 状態遷移表、境界、再開 |
+| 複数層/systemをまたぐ勝敗判定 | deepへ強制昇格 | 組み合わせ、境界ターン |
+| 再現性の低い進行不能 | deepへ強制昇格 | 観測ログ、反復playtest |
+
+ルールは安定した順序で評価し、同じ入力と設定から同じ結果を返します。複数カテゴリに一致しただけでは昇格せず、Medium以上のリスクまたは明示的な安全ゲートがある場合にギアを上げます。これにより、たとえばUI色変更が `UI + VisualPolish` に一致しても `fast` を維持できます。
+
+各結果には発火したrule IDを `matchedSignals` として残します。confidenceは一致した明示ルールの量と安全ゲートの有無から決定論的に算出する説明補助であり、統計的な正解確率ではありません。
 
 ## 5. Technical architecture
 
@@ -98,9 +118,9 @@ MVPは説明可能な決定論的ルールを主系とします。カテゴリ�
 
 ### M1 — Analyzer
 
-- タスク文を入力すると11カテゴリのいずれかを返す
-- 全分析フィールドとルールID付き根拠を表示する
-- Save/Physics/UIを含む最低12 fixtureで期待判定をテストする
+- タスク文を入力すると12カテゴリから1つ以上を返す
+- 4リスク、5検証flag、profile、reasoning、rule ID付き根拠、confidence、escalation条件を表示する
+- SaveLoad/Physics/UI/Exportを含む13 fixtureで期待判定をテストする
 
 ### M2 — Routing Lab
 
@@ -133,4 +153,3 @@ MVPは説明可能な決定論的ルールを主系とします。カテゴリ�
 - ルールの重みと、安全ゲートの閾値
 - モデルプロファイル設定の初期対応（利用可能なCodexモデルを実験開始時に確認）
 - fixtureの正解ラベルを一人で校正する手順
-
