@@ -141,6 +141,85 @@ const signalRules: SignalRule[] = [
     forceProfile: "deep",
   },
   {
+    id: "signal-wiring",
+    label: "Signal wiring or input callback",
+    categories: ["UI", "Input", "Gameplay"],
+    matches: (text) =>
+      includesAny(text, ["signal", "シグナル", "二重発火", "二重接続"])
+      || hasAllGroups(text, [["ボタン", "button"], ["反応しない", "呼ばれない", "not respond"]]),
+    impact: "Medium",
+    risks: { implementationRisk: "Medium", gameStateRisk: "Medium", regressionRisk: "Medium" },
+    verification: { automatedTestsRequired: true, playtestRequired: true },
+    reason: "入力event、Signal接続、受信callbackのどこで止まるかを切り分ける必要がある",
+    steps: ["発火元、接続状態、受信回数を順に記録する"],
+  },
+  {
+    id: "scene-state-loss",
+    label: "State lost across scene transition",
+    categories: ["Scene", "Gameplay", "SaveLoad"],
+    matches: (text) =>
+      hasAllGroups(text, [
+        ["scene", "シーン"],
+        ["切り替え後", "遷移後", "change"],
+        ["消える", "失われる", "初期化", "lost", "reset"],
+      ]),
+    impact: "High",
+    risks: { implementationRisk: "High", gameStateRisk: "High", regressionRisk: "High" },
+    verification: { automatedTestsRequired: true, playtestRequired: true },
+    reason: "sceneの破棄と同時に、保持すべきゲーム状態が失われている可能性がある",
+    steps: ["scene切り替え前後で保持する値と所有Nodeを記録する"],
+    forceProfile: "deep",
+  },
+  {
+    id: "save-read-compatibility",
+    label: "Legacy save load failure",
+    categories: ["SaveLoad"],
+    matches: (text) =>
+      hasAllGroups(text, [
+        ["古い", "旧", "legacy"],
+        ["セーブ", "save"],
+        ["読み込めない", "読めない", "load failure", "fails to load"],
+      ]),
+    impact: "High",
+    risks: {
+      implementationRisk: "High",
+      gameStateRisk: "High",
+      saveCompatibilityRisk: "High",
+      regressionRisk: "High",
+    },
+    verification: { automatedTestsRequired: true, playtestRequired: true, saveMigrationCheckRequired: true },
+    reason: "既存saveの後方互換性またはmigration経路が壊れている可能性がある",
+    steps: ["失敗する旧saveを複製し、上書きせず読込経路を再現する"],
+    forceProfile: "deep",
+  },
+  {
+    id: "responsive-ui-layout",
+    label: "Responsive Control layout",
+    categories: ["UI", "VisualPolish"],
+    matches: (text) =>
+      includesAny(text, ["anchor", "container", "画面サイズによって崩れる", "解像度で崩れる", "uiが崩れる"]),
+    impact: "Medium",
+    risks: { implementationRisk: "Medium", regressionRisk: "Medium" },
+    verification: { visualVerificationRequired: true, playtestRequired: true },
+    reason: "ControlのAnchor、Container、viewport設定を複数解像度で確認する必要がある",
+    steps: ["小・標準・横長の3解像度でControl配置を比較する"],
+  },
+  {
+    id: "exported-file-path",
+    label: "Exported file path mismatch",
+    categories: ["Export", "Tooling"],
+    matches: (text) =>
+      hasAllGroups(text, [
+        ["android", "web", "export", "書き出し後"],
+        ["ファイルが見つからない", "file not found", "読めない", "load failure"],
+      ]),
+    impact: "Medium",
+    risks: { implementationRisk: "Medium", regressionRisk: "Medium" },
+    verification: { automatedTestsRequired: true, exportCheckRequired: true },
+    reason: "Editorとexport packageでfileのpathまたは含有条件が異なる可能性がある",
+    steps: ["resource種別、使用path、export filterを確認して実buildで再現する"],
+  },
+  {
     id: "export-pipeline",
     label: "Platform export pipeline",
     categories: ["Export"],
@@ -157,7 +236,7 @@ const signalRules: SignalRule[] = [
     label: "Physics behavior",
     categories: ["Physics", "Gameplay"],
     matches: (text) =>
-      includesAny(text, ["physics", "物理", "衝突", "collision", "重力", "velocity", "rigidbody"]),
+      includesAny(text, ["physics", "物理", "衝突", "collision", "重力", "velocity", "rigidbody", "すり抜け"]),
     impact: "Medium",
     risks: { implementationRisk: "Medium", gameStateRisk: "Medium", regressionRisk: "Medium" },
     verification: { automatedTestsRequired: true, playtestRequired: true, visualVerificationRequired: true },

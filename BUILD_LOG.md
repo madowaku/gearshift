@@ -81,6 +81,33 @@
 - Visual inspection: PASS — desktopで制作行動が内部ギアより先に読める
 - Git: changes remain local on `feat/m1-rule-engine`; no commit or push performed
 
+## Session 004
+
+- Date: 2026-07-17 (Asia/Tokyo)
+- Goal: M2 — 入力タスクに関係するGodot Blockerと安全なCodex依頼文を提示する
+- Model: GPT-5-based Codex agent
+- Reasoning level: Not exposed to the session
+- Codex session ID: Not exposed to the session
+- Files changed: README.md, SPEC.md, BUILD_LOG.md, src/analyzer.ts, src/fixtures.ts, src/main.ts, src/style.css, src/blockers.ts, src/blockers.test.ts
+- What Codex accelerated: 16件のBlockerデータ、決定論的な関連選択、8 fixture、展開カード、安全な依頼文とCopy操作、回帰テストを実装
+- Human decisions: 用語集ではなく入力タスクに関係する穴だけを先回り表示し、進めてよい範囲と立ち止まる条件を案内する
+- Tests performed: `npm test`, `npm run typecheck`, `npm run build`, Playwright CLIで主要fixture、Copy、console、mobile layoutを確認
+- Credits before: Not available to the session
+- Credits after: Not available to the session
+- Result: M2 completed locally; 53 tests、typecheck、production build、browser validationがすべて成功
+- Next step: 人間レビューでBlocker文言と関連度を確認し、M2 commit候補にする
+
+### Verification result
+
+- `npm test`: PASS — 2 files, 53 tests
+- `npm run typecheck`: PASS
+- `npm run build`: PASS — Vite 7.3.6 production bundle generated
+- Fixture browser check: PASS — Save、Signal、Export、UI layoutで期待するBlockerを表示し、最大3件に制限
+- Copy interaction: PASS — safeCodexPromptをコピーし、buttonが `Copied` へ変化
+- Browser console: PASS — 0 errors, 0 warnings
+- Responsive inspection: PASS — 390px幅で展開カード、4案内区分、prompt、Copy buttonが読める
+- Git: changes remain local on `feat/m2-godot-blocker-guide`; no commit or push performed
+
 ## Session template
 
 ```markdown

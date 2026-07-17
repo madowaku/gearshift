@@ -8,6 +8,7 @@ export interface TaskFixture {
   expectedProfile: ModelProfile;
   expectedCategories: TaskCategory[];
   expectedChecks: Partial<Record<Exclude<keyof VerificationRequirements, "steps">, boolean>>;
+  expectedBlockerIds?: string[];
 }
 
 export const taskFixtures: TaskFixture[] = [
@@ -127,5 +128,85 @@ export const taskFixtures: TaskFixture[] = [
     expectedProfile: "deep",
     expectedCategories: ["Gameplay", "Tooling"],
     expectedChecks: { automatedTestsRequired: true, playtestRequired: true },
+  },
+  {
+    id: "signal-twice",
+    label: "Signalが二回呼ばれる",
+    difficulty: "moderate",
+    input: { description: "画面を開き直すとボタンのSignalが二回呼ばれる" },
+    expectedProfile: "balanced",
+    expectedCategories: ["UI", "Input", "Gameplay"],
+    expectedChecks: { automatedTestsRequired: true, playtestRequired: true },
+    expectedBlockerIds: ["signal-duplicate"],
+  },
+  {
+    id: "button-no-response",
+    label: "ボタンを押しても反応しない",
+    difficulty: "moderate",
+    input: { description: "ゲーム画面のボタンを押しても反応しない" },
+    expectedProfile: "balanced",
+    expectedCategories: ["UI", "Input", "Gameplay"],
+    expectedChecks: { automatedTestsRequired: true, playtestRequired: true },
+    expectedBlockerIds: ["signal-connection", "input-map-registration"],
+  },
+  {
+    id: "score-lost-on-scene-change",
+    label: "シーン切り替え後にスコアが消える",
+    difficulty: "hard",
+    input: { description: "シーン切り替え後にプレイヤーのスコアが消える" },
+    expectedProfile: "deep",
+    expectedCategories: ["Scene", "Gameplay", "SaveLoad"],
+    expectedChecks: { automatedTestsRequired: true, playtestRequired: true },
+    expectedBlockerIds: ["scene-transition-state", "autoload-state"],
+  },
+  {
+    id: "legacy-save-load",
+    label: "古いセーブが読み込めない",
+    difficulty: "hard",
+    input: { description: "アップデート後に古いセーブが読み込めない" },
+    expectedProfile: "deep",
+    expectedCategories: ["SaveLoad"],
+    expectedChecks: { automatedTestsRequired: true, saveMigrationCheckRequired: true },
+    expectedBlockerIds: ["save-compatibility"],
+  },
+  {
+    id: "responsive-ui-break",
+    label: "UIが画面サイズで崩れる",
+    difficulty: "moderate",
+    input: { description: "UIが画面サイズによって崩れるのでAnchorとContainerを確認したい" },
+    expectedProfile: "balanced",
+    expectedCategories: ["UI", "VisualPolish"],
+    expectedChecks: { visualVerificationRequired: true, playtestRequired: true },
+    expectedBlockerIds: ["ui-anchor-container"],
+  },
+  {
+    id: "android-file-missing",
+    label: "Androidだけファイルが見つからない",
+    difficulty: "hard",
+    input: { description: "Editorでは動くがAndroidだけJSONファイルが見つからない" },
+    expectedProfile: "balanced",
+    expectedCategories: ["Export", "Tooling"],
+    expectedChecks: { exportCheckRequired: true },
+    expectedBlockerIds: ["resource-file-path", "exported-build-only"],
+  },
+  {
+    id: "wall-tunneling",
+    label: "キャラクターが壁をすり抜ける",
+    difficulty: "moderate",
+    input: { description: "高速移動するとキャラクターが壁をすり抜ける" },
+    expectedProfile: "balanced",
+    expectedCategories: ["Physics", "Gameplay"],
+    expectedChecks: { automatedTestsRequired: true, playtestRequired: true },
+    expectedBlockerIds: ["collision-layer-mask", "process-physics"],
+  },
+  {
+    id: "input-once",
+    label: "入力が一度しか反応しない",
+    difficulty: "moderate",
+    input: { description: "Input Mapへ追加した操作が一度しか反応しない" },
+    expectedProfile: "balanced",
+    expectedCategories: ["Input", "Gameplay"],
+    expectedChecks: { automatedTestsRequired: true, playtestRequired: true },
+    expectedBlockerIds: ["input-map-registration"],
   },
 ];
