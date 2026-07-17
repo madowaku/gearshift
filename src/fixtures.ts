@@ -1,0 +1,131 @@
+import type { ModelProfile, TaskCategory, TaskInput, VerificationRequirements } from "./domain";
+
+export interface TaskFixture {
+  id: string;
+  label: string;
+  difficulty: "simple" | "moderate" | "hard";
+  input: TaskInput;
+  expectedProfile: ModelProfile;
+  expectedCategories: TaskCategory[];
+  expectedChecks: Partial<Record<Exclude<keyof VerificationRequirements, "steps">, boolean>>;
+}
+
+export const taskFixtures: TaskFixture[] = [
+  {
+    id: "ui-copy",
+    label: "ボタンの文言を変更",
+    difficulty: "simple",
+    input: { description: "メニュー画面の「開始」ボタンの文言を「つづきから」に変更する" },
+    expectedProfile: "fast",
+    expectedCategories: ["UI"],
+    expectedChecks: { visualVerificationRequired: true },
+  },
+  {
+    id: "audio-add",
+    label: "新しい効果音を追加",
+    difficulty: "simple",
+    input: { description: "宝箱を開いたときの新しい効果音を追加する" },
+    expectedProfile: "fast",
+    expectedCategories: ["Audio"],
+    expectedChecks: { playtestRequired: true },
+  },
+  {
+    id: "ui-color",
+    label: "警告色を変更",
+    difficulty: "simple",
+    input: { description: "設定画面にある警告ラベルの色を変更する" },
+    expectedProfile: "fast",
+    expectedCategories: ["UI", "VisualPolish"],
+    expectedChecks: { visualVerificationRequired: true },
+  },
+  {
+    id: "bamboo-animation",
+    label: "竹の成長アニメーション",
+    difficulty: "moderate",
+    input: { description: "竹が三段階で成長するアニメーションを追加する" },
+    expectedProfile: "balanced",
+    expectedCategories: ["VisualPolish"],
+    expectedChecks: { playtestRequired: true, visualVerificationRequired: true },
+  },
+  {
+    id: "scene-addition",
+    label: "結果シーンを追加",
+    difficulty: "moderate",
+    input: { description: "ステージ終了後に表示する新しいシーンを追加する" },
+    expectedProfile: "balanced",
+    expectedCategories: ["Scene"],
+    expectedChecks: { playtestRequired: true, visualVerificationRequired: true },
+  },
+  {
+    id: "dash-input",
+    label: "プレイヤーのダッシュ",
+    difficulty: "moderate",
+    input: { description: "プレイヤーのダッシュ入力とクールダウンを追加する" },
+    expectedProfile: "balanced",
+    expectedCategories: ["Input", "Gameplay"],
+    expectedChecks: { automatedTestsRequired: true, playtestRequired: true },
+  },
+  {
+    id: "physics-collision",
+    label: "坂道の衝突を修正",
+    difficulty: "moderate",
+    input: { description: "高速移動時に坂道の衝突をすり抜ける物理挙動を修正する" },
+    expectedProfile: "balanced",
+    expectedCategories: ["Physics", "Gameplay"],
+    expectedChecks: { automatedTestsRequired: true, playtestRequired: true },
+  },
+  {
+    id: "performance-profile",
+    label: "大量敵のカクつきを調査",
+    difficulty: "moderate",
+    input: { description: "敵が100体いるsceneでカクつく原因をprofilerで調査する" },
+    expectedProfile: "balanced",
+    expectedCategories: ["Performance", "Tooling"],
+    expectedChecks: { automatedTestsRequired: true, playtestRequired: true },
+  },
+  {
+    id: "android-export",
+    label: "Android export失敗",
+    difficulty: "moderate",
+    input: { description: "Androidエクスポートが署名工程で失敗する問題を修正する" },
+    expectedProfile: "balanced",
+    expectedCategories: ["Export"],
+    expectedChecks: { exportCheckRequired: true },
+  },
+  {
+    id: "turn-progression",
+    label: "ターン進行を変更",
+    difficulty: "hard",
+    input: { description: "行動予約と割り込みを含むターン進行を変更する" },
+    expectedProfile: "deep",
+    expectedCategories: ["Gameplay"],
+    expectedChecks: { automatedTestsRequired: true, playtestRequired: true },
+  },
+  {
+    id: "save-migration",
+    label: "セーブデータ形式を変更",
+    difficulty: "hard",
+    input: { description: "既存プレイヤーを維持したままセーブデータ形式をv2へ変更し移行する" },
+    expectedProfile: "deep",
+    expectedCategories: ["SaveLoad"],
+    expectedChecks: { saveMigrationCheckRequired: true, automatedTestsRequired: true },
+  },
+  {
+    id: "cross-layer-win",
+    label: "層をまたぐ勝敗判定",
+    difficulty: "hard",
+    input: { description: "地下層と地上層をまたぐ勝敗判定の不具合を修正する" },
+    expectedProfile: "deep",
+    expectedCategories: ["Gameplay", "Scene"],
+    expectedChecks: { automatedTestsRequired: true, playtestRequired: true },
+  },
+  {
+    id: "intermittent-softlock",
+    label: "再現性の低い進行不能",
+    difficulty: "hard",
+    input: { description: "scene遷移後にまれに発生する再現性の低い進行不能バグを調査する" },
+    expectedProfile: "deep",
+    expectedCategories: ["Gameplay", "Tooling"],
+    expectedChecks: { automatedTestsRequired: true, playtestRequired: true },
+  },
+];
