@@ -129,4 +129,3 @@ export const taskFixtures: TaskFixture[] = [
     expectedChecks: { automatedTestsRequired: true, playtestRequired: true },
   },
 ];
-
