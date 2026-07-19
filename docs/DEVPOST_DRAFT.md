@@ -85,3 +85,12 @@ Open the Vite development URL for local development. For the production preview 
 - Repository: https://github.com/madowaku/gearshift
 - License: MIT
 
+## Submission screenshots
+
+- `docs/screenshots/public-responsive-ui-desktop.png` — the balanced route for a responsive UI problem.
+- `docs/screenshots/public-scene-state-loss-desktop.png` — the deep route for scene state loss, with the top Blocker expanded and the prompt copied.
+- `docs/screenshots/public-scene-state-loss-mobile-390.png` — the same careful route at a 390px viewport.
+
+## Public demo verification
+
+The deployed URL was checked with the three frozen demo inputs. Each produced the expected guidance and top Blocker, the top Blocker expanded correctly, and Copy changed to `Copied`. The 390px check had no horizontal, Blocker-card, or prompt overflow. Reloading returned a visible initial fixture and result. The browser console reported 0 errors and 0 warnings. The selected submission set is the responsive UI desktop view, the scene state loss desktop view, and the scene state loss mobile view.
