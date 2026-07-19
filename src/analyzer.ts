@@ -9,6 +9,7 @@ import type {
   TaskInput,
   VerificationRequirements,
 } from "./domain";
+import { matchBeginnerSignals } from "./beginnerSignals";
 
 type RiskKey = keyof RiskAssessment;
 type VerificationFlag = Exclude<keyof VerificationRequirements, "steps">;
@@ -366,6 +367,15 @@ const reasoningForProfile: Record<ModelProfile, ReasoningLevel> = {
   deep: "high",
 };
 
+const profileRank: Record<ModelProfile, number> = { fast: 0, balanced: 1, deep: 2 };
+
+const strongestProfile = (profiles: ModelProfile[]): ModelProfile | undefined =>
+  profiles.reduce<ModelProfile | undefined>(
+    (strongest, profile) =>
+      !strongest || profileRank[profile] > profileRank[strongest] ? profile : strongest,
+    undefined,
+  );
+
 const escalationFor = (profile: ModelProfile): string[] => {
   if (profile === "fast") {
     return [
@@ -419,8 +429,9 @@ const guidanceFor = (profile: ModelProfile, steps: string[]) => {
 export const analyzeTask = (input: TaskInput): GearshiftRecommendation => {
   const text = `${input.description} ${input.projectContext ?? ""}`.normalize("NFKC").toLowerCase().trim();
   const matchedRules = signalRules.filter((rule) => rule.matches(text));
+  const creatorSignals = matchBeginnerSignals(input);
 
-  if (matchedRules.length === 0) {
+  if (matchedRules.length === 0 && creatorSignals.length === 0) {
     matchedRules.push({
       id: "ordinary-feature",
       label: "Ordinary isolated feature",
@@ -461,16 +472,39 @@ export const analyzeTask = (input: TaskInput): GearshiftRecommendation => {
     verification.steps.push(...(rule.steps ?? []));
   }
 
-  const categories = unique(matchedRules.flatMap((rule) => rule.categories));
-  const forcedProfile = matchedRules.find((rule) => rule.forceProfile)?.forceProfile;
+  for (const signal of creatorSignals) {
+    for (const [key, value] of Object.entries(signal.riskImpact)) {
+      const riskKey = key as RiskKey;
+      risks[riskKey] = maxRisk(risks[riskKey], value as RiskRating);
+    }
+    for (const [key, value] of Object.entries(signal.verification)) {
+      verification[key as VerificationFlag] ||= Boolean(value);
+    }
+    verification.steps.push(...signal.steps);
+  }
+
+  const categories = unique([
+    ...matchedRules.flatMap((rule) => rule.categories),
+    ...creatorSignals.flatMap((signal) => signal.relatedCategories),
+  ]);
+  const forcedProfile = strongestProfile([
+    ...matchedRules.flatMap((rule) => (rule.forceProfile ? [rule.forceProfile] : [])),
+    ...creatorSignals.map((signal) => signal.profileImpact),
+  ]);
   const hasMediumRisk = (Object.values(risks) as RiskRating[]).some(
     (risk) => riskRank[risk] >= riskRank.Medium,
   );
   const recommendedProfile: ModelProfile = forcedProfile
     ?? (hasMediumRisk ? "balanced" : "fast");
 
-  const matchedSignals: MatchedSignal[] = matchedRules.map(({ id, label }) => ({ id, label }));
-  const confidence = Math.min(0.94, 0.54 + matchedRules.length * 0.08 + (forcedProfile ? 0.08 : 0));
+  const matchedSignals: MatchedSignal[] = [
+    ...matchedRules.map(({ id, label }) => ({ id, label })),
+    ...creatorSignals.map(({ id, matchedReason }) => ({ id, label: matchedReason })),
+  ];
+  const confidence = Math.min(
+    0.94,
+    0.54 + (matchedRules.length + creatorSignals.length) * 0.08 + (forcedProfile ? 0.08 : 0),
+  );
   const uniqueSteps = unique(verification.steps);
 
   return {
@@ -481,7 +515,11 @@ export const analyzeTask = (input: TaskInput): GearshiftRecommendation => {
     reasoningLevel: reasoningForProfile[recommendedProfile],
     guidance: guidanceFor(recommendedProfile, uniqueSteps),
     matchedSignals,
-    reasons: unique(matchedRules.map((rule) => rule.reason)),
+    creatorSignals,
+    reasons: unique([
+      ...matchedRules.map((rule) => rule.reason),
+      ...creatorSignals.map((signal) => signal.matchedReason),
+    ]),
     confidence: Number(confidence.toFixed(2)),
     escalationConditions: escalationFor(recommendedProfile),
   };

@@ -4,6 +4,7 @@ export type BlockerDifficulty = "starter" | "careful" | "high-risk";
 
 export interface GodotBlocker {
   id: string;
+  family: string;
   title: string;
   summary: string;
   relatedCategories: TaskCategory[];
@@ -28,6 +29,7 @@ export interface BlockerMatch {
 export const godotBlockers: GodotBlocker[] = [
   {
     id: "scene-node-roles",
+    family: "scene-structure",
     title: "SceneとNodeの役割",
     summary: "再利用する単位と、scene tree内で責務を持つNodeを先に分けます。",
     relatedCategories: ["Scene", "Gameplay"],
@@ -43,6 +45,7 @@ export const godotBlockers: GodotBlocker[] = [
   },
   {
     id: "node-path-breakage",
+    family: "node-reference",
     title: "Node pathの破損",
     summary: "Node名や階層の変更で参照先が見つからなくなる問題を防ぎます。",
     relatedCategories: ["Scene", "UI", "Tooling"],
@@ -58,6 +61,7 @@ export const godotBlockers: GodotBlocker[] = [
   },
   {
     id: "signal-connection",
+    family: "signal",
     title: "Signalの未接続",
     summary: "発火元、接続箇所、受信methodの3点を順に確認します。",
     relatedCategories: ["UI", "Input", "Gameplay"],
@@ -73,6 +77,7 @@ export const godotBlockers: GodotBlocker[] = [
   },
   {
     id: "signal-duplicate",
+    family: "signal",
     title: "Signalの二重接続・二重発火",
     summary: "同じCallableへの接続箇所と、入力eventの重複処理を切り分けます。",
     relatedCategories: ["UI", "Input", "Gameplay"],
@@ -88,6 +93,7 @@ export const godotBlockers: GodotBlocker[] = [
   },
   {
     id: "input-map-registration",
+    family: "input",
     title: "Input Mapの未登録",
     summary: "action名、Project Settings、入力を読む場所が一致しているか確認します。",
     relatedCategories: ["Input", "Gameplay"],
@@ -103,6 +109,7 @@ export const godotBlockers: GodotBlocker[] = [
   },
   {
     id: "process-physics",
+    family: "physics-loop",
     title: "_processと_physics_process",
     summary: "描画更新と固定physics tickで行う処理を分けます。",
     relatedCategories: ["Physics", "Gameplay", "Input"],
@@ -118,6 +125,7 @@ export const godotBlockers: GodotBlocker[] = [
   },
   {
     id: "ui-anchor-container",
+    family: "ui-layout",
     title: "UI AnchorとContainer",
     summary: "Controlの配置を固定座標ではなく親ContainerとAnchorの関係から確認します。",
     relatedCategories: ["UI", "VisualPolish"],
@@ -133,6 +141,7 @@ export const godotBlockers: GodotBlocker[] = [
   },
   {
     id: "autoload-state",
+    family: "state-owner",
     title: "Autoloadと状態管理",
     summary: "sceneをまたぐ状態だけを、寿命と初期化方法を決めて保持します。",
     relatedCategories: ["Gameplay", "SaveLoad", "Scene"],
@@ -148,6 +157,7 @@ export const godotBlockers: GodotBlocker[] = [
   },
   {
     id: "scene-transition-state",
+    family: "state-transition",
     title: "Scene切り替え時の状態消失",
     summary: "現在sceneの破棄で失われる値を、切り替え前に明示的に受け渡します。",
     relatedCategories: ["Scene", "Gameplay", "SaveLoad"],
@@ -163,6 +173,7 @@ export const godotBlockers: GodotBlocker[] = [
   },
   {
     id: "save-compatibility",
+    family: "save",
     title: "Saveデータ互換性",
     summary: "旧schemaを残したfixtureでmigrationと読み書きの境界を確認します。",
     relatedCategories: ["SaveLoad", "Gameplay"],
@@ -178,6 +189,7 @@ export const godotBlockers: GodotBlocker[] = [
   },
   {
     id: "resource-file-path",
+    family: "export",
     title: "Resourceとファイルパス",
     summary: "`res://`、`user://`、ResourceLoader、export対象の違いを確認します。",
     relatedCategories: ["Scene", "Export", "Tooling"],
@@ -193,6 +205,7 @@ export const godotBlockers: GodotBlocker[] = [
   },
   {
     id: "platform-export",
+    family: "export",
     title: "Android / Web Export",
     summary: "export preset、template、署名、対象platform固有設定を分けて確認します。",
     relatedCategories: ["Export", "Tooling"],
@@ -208,6 +221,7 @@ export const godotBlockers: GodotBlocker[] = [
   },
   {
     id: "type-null-reference",
+    family: "runtime-type",
     title: "型の不一致とnull参照",
     summary: "値の生成時点、期待型、nullになりうる経路を先に確認します。",
     relatedCategories: ["Gameplay", "Tooling", "Scene"],
@@ -223,6 +237,7 @@ export const godotBlockers: GodotBlocker[] = [
   },
   {
     id: "timer-async",
+    family: "async",
     title: "Timerと非同期処理",
     summary: "待機中にsceneやNodeが破棄される経路と、多重開始を確認します。",
     relatedCategories: ["Gameplay", "AI", "Scene"],
@@ -238,6 +253,7 @@ export const godotBlockers: GodotBlocker[] = [
   },
   {
     id: "collision-layer-mask",
+    family: "collision",
     title: "Collision Layer / Mask",
     summary: "物体が属するlayerと、検出するmaskを両側から確認します。",
     relatedCategories: ["Physics", "Gameplay"],
@@ -253,6 +269,7 @@ export const godotBlockers: GodotBlocker[] = [
   },
   {
     id: "exported-build-only",
+    family: "export",
     title: "ローカルでは動くが書き出し後に壊れる",
     summary: "Editorとexport buildの環境差、path、含まれるfileを比較します。",
     relatedCategories: ["Export", "Tooling", "Scene"],
@@ -313,25 +330,58 @@ export const selectBlockers = (
   const text = normalize(`${input.description} ${input.projectContext ?? ""}`);
   const analysisSignals = new Set(analysis.matchedSignals.map((signal) => signal.id));
   const analysisCategories = new Set(analysis.categories);
+  const creatorSignals = analysis.creatorSignals ?? [];
+  const preferredBlockerRanks = new Map(
+    creatorSignals.flatMap((signal) => signal.preferredBlockerIds.map((id, rank) => [id, rank] as const)),
+  );
 
-  return godotBlockers
+  const candidates = godotBlockers
     .map((blocker, index) => {
       const phraseMatches = blocker.matchPhrases.filter((phrase) => text.includes(normalize(phrase)));
       const signalMatches = blocker.matchedSignals.filter((signal) => analysisSignals.has(signal));
       const categoryMatches = blocker.relatedCategories.filter((category) => analysisCategories.has(category));
-      const score = Math.min(100, phraseMatches.length * 30 + signalMatches.length * 14 + categoryMatches.length * 5);
+      const preferredRank = preferredBlockerRanks.get(blocker.id);
+      const score = Math.min(
+        100,
+        phraseMatches.length * 30 + signalMatches.length * 14 + categoryMatches.length * 5
+          + (preferredRank === undefined ? 0 : 20),
+      );
       const reasons = [
         ...phraseMatches.slice(0, 1).map((phrase) => `タスク文の「${phrase}」に一致`),
         ...signalMatches.slice(0, 1).map((signal) => `分析信号「${signal}」に関連`),
         ...categoryMatches.slice(0, 1).map((category) => `${category}カテゴリに関連`),
+        ...(preferredRank === undefined ? [] : ["初心者シグナルから優先"]),
       ];
 
-      return { blocker, score, reasons, index, hasStrongMatch: phraseMatches.length > 0 || signalMatches.length > 0 };
+      return {
+        blocker,
+        score,
+        reasons,
+        index,
+        preferredRank,
+        hasStrongMatch: phraseMatches.length > 0 || signalMatches.length > 0 || preferredRank !== undefined,
+      };
     })
     .filter((candidate) => candidate.hasStrongMatch && candidate.score >= 14)
-    .sort((left, right) => right.score - left.score || left.index - right.index)
-    .slice(0, Math.max(0, Math.min(3, limit)))
-    .map(({ blocker, score, reasons }) => ({
+    .sort((left, right) => {
+      const leftPreferred = left.preferredRank === undefined ? 1 : 0;
+      const rightPreferred = right.preferredRank === undefined ? 1 : 0;
+      return leftPreferred - rightPreferred
+        || (left.preferredRank ?? Number.MAX_SAFE_INTEGER) - (right.preferredRank ?? Number.MAX_SAFE_INTEGER)
+        || right.score - left.score
+        || left.index - right.index;
+    });
+
+  const selected: typeof candidates = [];
+  for (const candidate of candidates) {
+    if (creatorSignals.length > 0 && selected.some((match) => match.blocker.family === candidate.blocker.family)) {
+      continue;
+    }
+    selected.push(candidate);
+    if (selected.length >= Math.max(0, Math.min(3, limit))) break;
+  }
+
+  return selected.map(({ blocker, score, reasons }) => ({
       blocker,
       relevance: score,
       reasons,

@@ -19,6 +19,7 @@ describe("Godot Blocker Guide", () => {
     expect(godotBlockers.length).toBeGreaterThanOrEqual(12);
     for (const blocker of godotBlockers) {
       expect(blocker.id).not.toBe("");
+      expect(blocker.family).not.toBe("");
       expect(blocker.firstSteps.length).toBeGreaterThan(0);
       expect(blocker.commonPitfalls.length).toBeGreaterThan(0);
       expect(blocker.verificationSteps.length).toBeGreaterThan(0);
@@ -89,4 +90,29 @@ describe("Godot Blocker Guide", () => {
       }
     },
   );
+
+  it.each(taskFixtures.filter((taskFixture) => taskFixture.expectedTopBlocker))(
+    "ranks the calibrated Top 1 blocker for $id",
+    (taskFixture) => {
+      const analysis = analyzeTask(taskFixture.input);
+      const matches = selectBlockers(taskFixture.input, analysis);
+      expect(matches[0]?.blocker.id).toBe(taskFixture.expectedTopBlocker);
+      expect(matches[0]?.safeCodexPrompt.trim().length).toBeGreaterThan(100);
+    },
+  );
+
+  it("limits beginner-signal results to one blocker per family", () => {
+    const taskFixture = fixture("beginner-exported-asset-missing");
+    const matches = selectBlockers(taskFixture.input, analyzeTask(taskFixture.input));
+    expect(matches.length).toBe(1);
+    expect(new Set(matches.map((match) => match.blocker.family)).size).toBe(matches.length);
+  });
+
+  it("keeps useful creator guidance when no specific blocker matches", () => {
+    const taskFixture = fixture("ui-copy");
+    const analysis = analyzeTask(taskFixture.input);
+    expect(selectBlockers(taskFixture.input, analysis)).toHaveLength(0);
+    expect(analysis.guidance.firstAction).not.toBe("");
+    expect(analysis.reasons.length).toBeGreaterThan(0);
+  });
 });
