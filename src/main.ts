@@ -4,6 +4,18 @@ import { selectBlockers } from "./blockers";
 import type { BlockerMatch } from "./blockers";
 import type { GearshiftRecommendation, RiskAssessment, VerificationRequirements } from "./domain";
 import { taskFixtures } from "./fixtures";
+import {
+  buildDisplayPrompt,
+  getBlockerDisplayCopy,
+  getCategoryLabel,
+  getFixtureDisplayCopy,
+  getSignalLabel,
+  translateBlockerReason,
+  translateEscalation,
+  translateGuidance,
+  translateReason,
+  translateText,
+} from "./uiCopy";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 
@@ -13,10 +25,10 @@ app.innerHTML = `
   <main class="shell">
     <header class="hero">
       <div>
-        <p class="eyebrow">OPENAI BUILD WEEK · M2 BLOCKER GUIDE</p>
+        <p class="eyebrow">OPENAI BUILD WEEK · CREATOR-FIRST GODOT NAVIGATOR</p>
         <h1>Codex <span>Gearshift</span></h1>
       </div>
-      <p class="lead">Godotの実装タスクから危険信号を拾い、次の進め方と確認手順へ変速します。</p>
+      <p class="lead">Turn a plain-language Godot task into the safest next move, likely blockers, and a verification plan.</p>
     </header>
 
     <section class="analyzer-layout" aria-label="Gearshift analyzer">
@@ -24,19 +36,19 @@ app.innerHTML = `
         <div class="section-heading">
           <div>
             <p class="step">01 · TASK</p>
-            <h2>何を変えますか？</h2>
+            <h2>What are you changing?</h2>
           </div>
           <span class="status">LOCAL · DETERMINISTIC</span>
         </div>
 
-        <label for="fixture-select">サンプルタスク <span id="fixture-count"></span></label>
+        <label for="fixture-select">Sample tasks <span id="fixture-count"></span></label>
         <select id="fixture-select"></select>
 
-        <label for="task-input">実装タスク</label>
-        <textarea id="task-input" rows="6" required placeholder="例：既存セーブを維持したまま、ターン進行を変更する"></textarea>
+        <label for="task-input">Implementation task</label>
+        <textarea id="task-input" rows="6" required placeholder="e.g. Change turn progression while preserving existing saves"></textarea>
 
         <button type="submit">Analyze task <span aria-hidden="true">→</span></button>
-        <p class="privacy-note">入力はブラウザ内だけで分析され、外部へ送信されません。</p>
+        <p class="privacy-note">Analysis runs in your browser and is never sent externally.</p>
       </form>
 
       <section id="result" class="result-stack" aria-live="polite">
@@ -44,7 +56,7 @@ app.innerHTML = `
           <div class="section-heading">
             <div>
               <p class="step">02 · NEXT MOVE</p>
-              <h2>おすすめの進め方</h2>
+              <h2>Recommended next move</h2>
             </div>
           </div>
           <div class="guidance-banner">
@@ -52,7 +64,7 @@ app.innerHTML = `
             <p id="guidance-summary"></p>
           </div>
           <div class="first-action">
-            <span>最初にやること</span>
+            <span>First action</span>
             <strong id="first-action"></strong>
           </div>
           <div class="technical-route" aria-label="Internal routing details">
@@ -66,24 +78,24 @@ app.innerHTML = `
 
         <article class="panel explanation-panel">
           <p class="step">03 · WATCH</p>
-          <h2>詰まりやすいところ</h2>
+          <h2>What to watch</h2>
           <ul id="reasons" class="plain-list"></ul>
           <details>
-            <summary>一致した危険信号</summary>
+            <summary>Matched signals</summary>
             <ul id="signals" class="signal-list"></ul>
           </details>
         </article>
 
         <article class="panel verification-panel">
           <p class="step">04 · CHECK</p>
-          <h2>次に確認すること</h2>
+          <h2>What to check next</h2>
           <div id="checks" class="check-grid"></div>
           <ol id="steps" class="verification-steps"></ol>
         </article>
 
         <article class="panel escalation-panel">
           <p class="step">05 · STOP SIGNALS</p>
-          <h2>立ち止まって見直す条件</h2>
+          <h2>Stop and review when</h2>
           <ul id="escalations" class="plain-list"></ul>
         </article>
 
@@ -91,11 +103,11 @@ app.innerHTML = `
           <div class="section-heading">
             <div>
               <p class="step">06 · BLOCKER GUIDE</p>
-              <h2>この作業で詰まりやすいところ</h2>
+              <h2>Likely blockers for this task</h2>
             </div>
             <span id="blocker-count" class="status"></span>
           </div>
-          <p class="blocker-intro">入力したタスクに強く関係する注意点だけを、最大3件表示します。</p>
+          <p class="blocker-intro">Only blockers strongly related to your task are shown, up to three.</p>
           <div id="blocker-cards" class="blocker-list"></div>
         </article>
       </section>
@@ -130,7 +142,7 @@ const checkLabels: Record<Exclude<keyof VerificationRequirements, "steps">, stri
 
 const customOption = document.createElement("option");
 customOption.value = "custom";
-customOption.textContent = "CUSTOM · 自由入力";
+customOption.textContent = "CUSTOM · Free input";
 fixtureSelect.append(customOption);
 
 const renderTextList = (element: HTMLElement, items: string[]) => {
@@ -171,49 +183,51 @@ const makeBlockerSection = (title: string, items: string[]) => {
   return section;
 };
 
-const makeBlockerCard = (match: BlockerMatch, index: number) => {
+const makeBlockerCard = (match: BlockerMatch, index: number, taskDescription: string, analysis: GearshiftRecommendation) => {
   const details = document.createElement("details");
   details.className = "blocker-card";
   details.open = index === 0;
+  const copy = getBlockerDisplayCopy(match.blocker);
 
   const summary = document.createElement("summary");
   const summaryText = document.createElement("span");
   const title = document.createElement("strong");
-  title.textContent = match.blocker.title;
+  title.textContent = copy.title;
   const why = document.createElement("small");
-  why.textContent = match.reasons.join(" · ");
+  why.textContent = match.reasons.map(translateBlockerReason).join(" · ");
   summaryText.append(title, why);
   const relevance = document.createElement("span");
   relevance.className = "relevance";
-  relevance.textContent = `関連度 ${match.relevance}`;
+  relevance.textContent = `Relevance ${match.relevance}`;
   summary.append(summaryText, relevance);
 
   const body = document.createElement("div");
   body.className = "blocker-body";
   const overview = document.createElement("p");
   overview.className = "blocker-summary";
-  overview.textContent = match.blocker.summary;
+  overview.textContent = copy.summary;
   const grid = document.createElement("div");
   grid.className = "blocker-grid";
   grid.append(
-    makeBlockerSection("最初にやること", match.blocker.firstSteps),
-    makeBlockerSection("詰まりやすいところ", match.blocker.commonPitfalls),
-    makeBlockerSection("次に確認すること", match.blocker.verificationSteps),
-    makeBlockerSection("立ち止まる条件", match.blocker.stopConditions),
+    makeBlockerSection("First steps", copy.firstSteps),
+    makeBlockerSection("Common pitfalls", copy.commonPitfalls),
+    makeBlockerSection("Verification", copy.verificationSteps),
+    makeBlockerSection("Stop conditions", copy.stopConditions),
   );
 
   const promptHeading = document.createElement("h3");
-  promptHeading.textContent = "Codexへ渡す依頼文";
+  promptHeading.textContent = "Safe Codex prompt";
   const prompt = document.createElement("pre");
   prompt.className = "prompt-box";
-  prompt.textContent = match.safeCodexPrompt;
+  const displayPrompt = buildDisplayPrompt(match.blocker, taskDescription, analysis);
+  prompt.textContent = displayPrompt;
   const copyButton = document.createElement("button");
   copyButton.type = "button";
   copyButton.className = "copy-button";
   copyButton.textContent = "Copy prompt";
   copyButton.addEventListener("click", async () => {
     try {
-      await copyPrompt(match.safeCodexPrompt);
+      await copyPrompt(displayPrompt);
       copyButton.textContent = "Copied";
     } catch {
       copyButton.textContent = "Copy failed";
@@ -225,11 +239,12 @@ const makeBlockerCard = (match: BlockerMatch, index: number) => {
   return details;
 };
 
-const renderResult = (result: GearshiftRecommendation, description: string) => {
+const renderResult = (result: GearshiftRecommendation, description: string, displayDescription = description) => {
+  const guidance = translateGuidance(result.guidance);
   app.dataset.profile = result.recommendedProfile;
-  get("guidance-title").textContent = result.guidance.title;
-  get("guidance-summary").textContent = result.guidance.summary;
-  get("first-action").textContent = result.guidance.firstAction;
+  get("guidance-title").textContent = guidance.title;
+  get("guidance-summary").textContent = guidance.summary;
+  get("first-action").textContent = guidance.firstAction;
   get("profile").textContent = `Internal gear · ${result.recommendedProfile}`;
   get("reasoning").textContent = `Reasoning · ${result.reasoningLevel}`;
   get("confidence").textContent = `Signal confidence · ${Math.round(result.confidence * 100)}%`;
@@ -237,7 +252,7 @@ const renderResult = (result: GearshiftRecommendation, description: string) => {
   get("categories").replaceChildren(
     ...result.categories.map((category) => {
       const span = document.createElement("span");
-      span.textContent = category;
+      span.textContent = getCategoryLabel(category);
       return span;
     }),
   );
@@ -257,14 +272,14 @@ const renderResult = (result: GearshiftRecommendation, description: string) => {
     ),
   );
 
-  renderTextList(get("reasons"), result.reasons);
+  renderTextList(get("reasons"), result.reasons.map(translateReason));
   get("signals").replaceChildren(
     ...result.matchedSignals.map((signal) => {
       const li = document.createElement("li");
       const code = document.createElement("code");
       code.textContent = signal.id;
       const span = document.createElement("span");
-      span.textContent = signal.label;
+      span.textContent = getSignalLabel(signal);
       li.append(code, span);
       return li;
     }),
@@ -282,8 +297,8 @@ const renderResult = (result: GearshiftRecommendation, description: string) => {
     ),
   );
 
-  renderTextList(get("steps"), result.verification.steps);
-  renderTextList(get("escalations"), result.escalationConditions);
+  renderTextList(get("steps"), result.verification.steps.map(translateText));
+  renderTextList(get("escalations"), result.escalationConditions.map(translateEscalation));
 
   const blockers = selectBlockers({ description, godotVersion: "4.x" }, result);
   get("blocker-count").textContent = `${blockers.length} / 3`;
@@ -291,17 +306,21 @@ const renderResult = (result: GearshiftRecommendation, description: string) => {
   if (blockers.length === 0) {
     const empty = document.createElement("p");
     empty.className = "blocker-empty";
-    empty.textContent = "このタスクに強く関連するBlockerはありません。現在の確認手順から進めます。";
+    empty.textContent = "No strongly related blockers were found. Continue with the current verification plan.";
     blockerCards.replaceChildren(empty);
   } else {
-    blockerCards.replaceChildren(...blockers.map(makeBlockerCard));
+    blockerCards.replaceChildren(...blockers.map((match, index) => makeBlockerCard(match, index, displayDescription, result)));
   }
 };
 
 for (const fixture of taskFixtures) {
+  const display = getFixtureDisplayCopy(fixture.id, {
+    label: fixture.label,
+    description: fixture.input.description,
+  });
   const option = document.createElement("option");
   option.value = fixture.id;
-  option.textContent = `${fixture.difficulty.toUpperCase()} · ${fixture.label}`;
+  option.textContent = `${fixture.difficulty.toUpperCase()} · ${display.label}`;
   fixtureSelect.append(option);
 }
 
@@ -309,9 +328,13 @@ get("fixture-count").textContent = `(${taskFixtures.length})`;
 
 const selectFixture = (id: string) => {
   const fixture = taskFixtures.find((candidate) => candidate.id === id) ?? taskFixtures[0];
+  const display = getFixtureDisplayCopy(fixture.id, {
+    label: fixture.label,
+    description: fixture.input.description,
+  });
   fixtureSelect.value = fixture.id;
-  taskInput.value = fixture.input.description;
-  renderResult(analyzeTask(fixture.input), fixture.input.description);
+  taskInput.value = display.description;
+  renderResult(analyzeTask(fixture.input), fixture.input.description, display.description);
 };
 
 fixtureSelect.addEventListener("change", () => {
@@ -319,14 +342,28 @@ fixtureSelect.addEventListener("change", () => {
 });
 taskInput.addEventListener("input", () => {
   const selectedFixture = taskFixtures.find((candidate) => candidate.id === fixtureSelect.value);
-  if (!selectedFixture || taskInput.value !== selectedFixture.input.description) {
+  const selectedDisplay = selectedFixture
+    ? getFixtureDisplayCopy(selectedFixture.id, {
+      label: selectedFixture.label,
+      description: selectedFixture.input.description,
+    })
+    : undefined;
+  if (!selectedFixture || taskInput.value !== selectedDisplay?.description) {
     fixtureSelect.value = "custom";
   }
 });
 form.addEventListener("submit", (event) => {
   event.preventDefault();
-  const description = taskInput.value;
-  renderResult(analyzeTask({ description, godotVersion: "4.x" }), description);
+  const displayDescription = taskInput.value;
+  const fixture = taskFixtures.find((candidate) => {
+    const display = getFixtureDisplayCopy(candidate.id, {
+      label: candidate.label,
+      description: candidate.input.description,
+    });
+    return display.description === displayDescription;
+  });
+  const description = fixture?.input.description ?? displayDescription;
+  renderResult(analyzeTask(fixture?.input ?? { description, godotVersion: "4.x" }), description, displayDescription);
 });
 
 selectFixture(taskFixtures[0].id);

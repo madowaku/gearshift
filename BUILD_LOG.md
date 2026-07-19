@@ -215,6 +215,40 @@
 - Result: Devpostドラフトとチェックリストを3枚構成へ更新し、Display-only画像を削除。公開URL、README、判定ロジック、package-lock.jsonは変更なし
 - Next step: 指定commit・push・PRを実行し、PR確認後にmainへマージする
 
+## Session 010
+
+- Date: 2026-07-19 (Asia/Tokyo)
+- Goal: 公開デモの動画収録版を作成する
+- Starting state: `main`に`v0.4.0-build-week-submission`を付けてpush済み。公開URLの3入力確認済み。VIDEO_SCRIPT.mdは存在する
+- Model: Not available to the session
+- Reasoning level: Not available
+- Codex session ID: Not available
+- Files changed: docs/videos/gearshift-build-week-demo-final.mp4, docs/VIDEO_SCRIPT.md, BUILD_LOG.md
+- What Codex accelerated: 公開デモ操作の画面収録、3入力の一括再生、WebMから提出向けH.264 MP4への変換、収録時間と解像度の確認
+- Human decisions: Display-onlyは動画の説明には残すが、提出スクリーンショットからは除外する。音声は合成せず、画面収録版を先に保存してナレーションを後付けする
+- Tests performed: Playwright video recording、公開URLで3入力・Copy操作、ffprobeによるduration/codec/frame確認
+- Credits before: Not available
+- Credits after: Not available
+- Result: `docs/videos/gearshift-build-week-demo-final.mp4`を生成。H.264、1440×900、約2:04、音声なし。3入力の結果とScene状態消失のsafe prompt Copyを収録
+- Next step: VIDEO_SCRIPT.mdに沿ってナレーションを録音・合成し、音声付き版を最終確認する
+
+## Session 011
+
+- Date: 2026-07-19 (Asia/Tokyo)
+- Goal: Prepare the public hackathon demo for English-speaking judges without changing frozen routing behavior
+- Starting state: `main` is at the submitted Build Week state. Existing uncommitted video artifacts and the prior `BUILD_LOG.md` / `docs/VIDEO_SCRIPT.md` changes were preserved
+- Model: Not available to the session
+- Reasoning level: Not available
+- Codex session ID: Not available
+- Files changed: `src/main.ts`, `src/uiCopy.ts`, `BUILD_LOG.md`
+- What Codex accelerated: English presentation copy, English fixture labels and task bodies, English blocker cards and safe prompts, deterministic mapping from public English fixture text back to canonical analyzer inputs, and desktop/mobile browser QA
+- Human decisions: Feature Freeze remains in effect. Analyzer behavior, beginner-signal matching, blocker selection, scoring, profiles, fixture judgment, and risk logic were not changed. No i18n framework, language toggle, API, deploy, commit, or push was added
+- Tests performed: `npm test`, `npm run typecheck`, `npm run build`, `npm run dev`, Playwright 1440x900 and 390x844 checks, all three public demo tasks, direct English form submission, blocker expansion, Copy=`Copied`, reload, console error/warning check, all 31 fixture displays checked for Japanese text, and `git diff --check`
+- Credits before: Not available
+- Credits after: Not available
+- Result: 96 tests passed. Typecheck and production build passed. The three public tasks display `Proceed directly`, `Proceed with checks`, and `Create a restore point and proceed carefully`; expected English blockers and non-empty safe prompts render. Copy changes to `Copied`, desktop and 390px layouts have no horizontal overflow, console errors 0 / warnings 0, and no Japanese text remains in the rendered fixture results
+- Next step: Human review of the English public UI; do not commit, push, merge, or deploy until review
+
 ## Session template
 
 ```markdown
