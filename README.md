@@ -1,64 +1,140 @@
 # Codex Gearshift
 
-Codex Gearshiftは、Godot 4.xを使う個人ゲーム開発者向けの制作ナビゲーターです。ゲーム実装タスクを分析し、詰まりやすい場所、最初に行うこと、必要な確認を提示します。AIモデルと推論レベルの選択は内部の変速機として扱い、制作者が設定を気にせずゲームへ集中できることを目指します。
+Codex Gearshift is a local-first, deterministic production navigator for solo developers building games with Godot 4.x. It turns a task description into a game-specific risk profile, an internal routing recommendation, and a verification plan.
 
-現在は **M2: Godot Blocker Guide** です。タスク文または21件のfixtureを選ぶと、決定論的ルールエンジンが危険信号、進め方、検証に加え、その作業に関係するBlockerを最大3件まで一画面に表示します。
+**Live demo:** [madowaku.github.io/gearshift](https://madowaku.github.io/gearshift/)
 
-## MVPの価値
+The app runs in the browser without an API key, backend, database, or network request for task analysis. The current submission candidate is **v0.3.0-m2.1**.
 
-- Gameplay / UI / SaveLoad / Physics / Toolingなど12種の複数タスク分類
-- 複雑度、変更範囲、ゲーム状態、セーブ互換性のリスク判定
-- 視覚確認とプレイテストの必要性を明示
-- 「そのまま進める / 確認しながら進める / 退避して慎重に進める」の制作ガイダンス
-- Fast / Balanced / Deepのモデルプロファイルと推論レベルは内部で選択
-- Godot向けの検証手順と、推薦理由を同じ画面に表示
-- 16件のGodot固有Blockerから、最初の行動、落とし穴、停止条件を関連順に表示
-- 安全境界と検証条件を含むCodex依頼文を、そのままコピー可能
+## What is Codex Gearshift?
 
-モデルプロファイルと実際のモデルIDは分離します。これにより、利用可能なCodexモデルが変わっても判定ロジックと実験結果を保てます。
+Gearshift helps a creator decide how carefully to approach a Godot task:
 
-## ローカル起動
+- **Move fast** for a small, display-only change.
+- **Move with checks** for a change with a concrete Godot integration risk.
+- **Move carefully** when save compatibility or shared game state could be lost.
 
-必要環境: Node.js 22以降、npm 10以降
+The core sequence is:
+
+`task → Godot-specific risk → internal model/reasoning route → verification plan`
+
+The model profile is an internal routing detail. The creator sees the next useful action, risks, blockers, checks, and safe Codex prompt instead of having to choose a model manually.
+
+## Who it is for
+
+Gearshift is for solo Godot 4.x developers, game-jam participants, and beginner or non-engineering creators who can describe what feels wrong but may not know the Godot term for it.
+
+## The problem
+
+Beginners often say “the button does nothing,” “it happens twice,” or “the coins disappeared after changing scenes.” Those descriptions are meaningful, but they do not directly name signals such as signal connections, collision masks, scene state, or save compatibility.
+
+Gearshift translates that language into an explainable next step without pretending that one recommendation is objectively optimal.
+
+## How it works
+
+1. Enter a task in plain language or choose a fixture.
+2. A deterministic Analyzer matches categories, risk signals, beginner-language signals, and verification requirements.
+3. The Blocker Guide ranks Godot-specific failure modes and limits duplicate blocker families.
+4. The UI presents the recommended action, first step, stop conditions, checks, and a safe prompt for Codex.
+
+The repository contains 21 reproducible task fixtures, 16 Godot-specific blockers, and regression tests for the M2.1 beginner-language calibration.
+
+## Three demo tasks
+
+| Input | Expected guidance | Godot-specific route |
+| --- | --- | --- |
+| `ダイス結果の表示だけを3からTRIPLEへ変えたい` | Move fast | Display-only change; UI text/visual verification |
+| `画面サイズを変えるとボタンが変な場所に行く` | Move with checks | UI Anchor / Container |
+| `シーンを変えたらコインが0になった` | Move carefully | Scene state loss; preserve and verify shared state |
+
+These three inputs show the intended change in gear: low-risk wording, a common Godot UI integration problem, and a potentially destructive state problem.
+
+## Installation
+
+Requirements: Node.js 22 or later and npm 10 or later.
 
 ```bash
-npm install
+git clone https://github.com/madowaku/gearshift.git
+cd gearshift
+npm ci
 npm run dev
 ```
 
-ブラウザで `http://localhost:5173` を開きます。サンプルタスクを選ぶと即座に分析され、任意のタスク文は `Analyze task` で判定できます。分析はブラウザ内で完結し、入力を外部へ送信しません。
+Open the local URL printed by Vite. Local development uses the root path and remains available at the usual Vite development URL.
 
-結果の読み方:
+## Supported platforms
 
-- **Next move:** おすすめの進め方と、最初に行う具体的な一手
-- **Risks:** 実装、ゲーム状態、セーブ互換性、回帰の4軸
-- **Watch:** 詰まりやすい場所と、必要なら確認できるルールID
-- **Check:** 必須チェックと具体的な順序
-- **Stop signals:** 作業を続けず、分割・退避・観測へ戻る条件
-- **Blocker Guide:** タスクに強く関係する最大3件の注意点と、安全なCodex依頼文
+- Modern desktop browsers with ES2022 support.
+- Modern mobile browsers, including a 390px-wide viewport check.
+- Node.js 22+ for local installation and validation.
+- Godot 4.x task language and project concepts.
 
-品質チェック:
+Godot itself is not required to run the web demo. Gearshift does not currently support Godot 3.x, Unity, Unreal, or a Godot Editor plugin.
+
+## How to test
+
+From the repository root:
 
 ```bash
+npm ci
 npm test
 npm run typecheck
 npm run build
+npm run dev
+npm run preview
 ```
 
-## MVPスコープ
+For the production preview, use the `/gearshift/` project path shown by Vite. Manual checks should cover the three demo tasks, desktop layout, a 390px viewport, Copy prompt interaction, and browser console errors or warnings.
 
-入力はタスク文と最小限のGodotプロジェクト情報、出力は分類・リスク・ルーティング・検証提案です。Godot Editorプラグイン、コード自動変更、クラウドDB、課金、チーム管理はBuild Week版に含めません。
+## Privacy and local-first behavior
 
-詳細は [SPEC.md](./SPEC.md)、開発の証跡は [BUILD_LOG.md](./BUILD_LOG.md) を参照してください。
+Task analysis runs in the browser. The app does not send task text to an external AI API, does not require an API key, and does not include a backend, database, account system, or cloud save.
 
-## Milestones
+## How Codex was used
 
-- **M0 — Foundation:** 仕様、データ契約、静的プレビュー、開発記録
-- **M1 — Analyzer:** 入力UI、13 fixture、決定論的なルールベース判定（実装済み）
-- **M2 — Godot Blocker Guide:** 16 Blocker、21 fixture、関連案内と安全な依頼文（実装済み）
-- **M3 — Demo Polish:** リスク可視化、結果コピー、レスポンシブ調整、デモ導線
-- **M4 — Submission:** 回帰確認、README/Devpost/3分動画、提出前監査
+Codex was used to implement and verify:
 
-## Status
+- the Vite + TypeScript application;
+- the deterministic Analyzer;
+- the Godot Blocker Guide;
+- beginner-language signals;
+- fixtures and regression tests;
+- browser validation; and
+- responsive desktop and mobile checks.
 
-M2を `feat/m2-godot-blocker-guide` で開発中です。M1は `v0.2.0-m1` として退避済みです。公開・課金・外部送信を行わず、解析データはブラウザ内で扱います。
+## How GPT-5.6 Thinking was used
+
+GPT-5.6 Thinking was used for product direction and design review, including:
+
+- the shift from a model router to a creator-first navigator;
+- defining beginners and non-engineers as the primary audience;
+- designing Godot-specific risks and stop conditions;
+- reviewing evaluation inputs and correction criteria for Beginner Language Calibration; and
+- planning Feature Freeze and the submission phase.
+
+GPT-5.6 was not integrated into the application or called through an API. The runtime path is deterministic and local-first. No unverified model ID, reasoning level, or credit count is claimed here.
+
+## What Codex accelerated
+
+Codex accelerated repository scaffolding, rule and data-contract implementation, fixture creation, regression coverage, browser smoke checks, responsive inspection, and the preparation of reproducible submission documentation.
+
+## Key human decisions
+
+The human decisions were to focus on Godot 4.x, keep the MVP local-first and explainable, make creator action more prominent than model names, add beginner-language calibration, freeze Analyzer and Blocker behavior at M2.1, choose the three demo inputs, and reserve the remaining work for submission readiness.
+
+## Known limitations
+
+- Rules are deterministic and explainable, not a claim of objective optimality.
+- The app does not edit Godot projects or execute Codex tasks.
+- There is no Godot Editor integration, backend, authentication, database, or external AI API.
+- The current UI is Japanese-first, while this README and submission material are English-centered.
+- Platform export advice is guidance; the app does not build or run an Android or desktop Godot export.
+- Beginner phrasing coverage is intentionally bounded by explicit signals and fixtures.
+
+## Build Week development scope
+
+The Build Week MVP covers task input, game-specific risk analysis, internal routing profiles, Godot blocker guidance, verification planning, and safe prompt generation. It intentionally excludes a backend, accounts, payments, a Godot plugin, automatic code edits, and autonomous agent execution.
+
+## License
+
+MIT. See [LICENSE](./LICENSE).

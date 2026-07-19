@@ -164,6 +164,23 @@
 - Browser console: PASS — errors 0、warnings 0
 - Git: commit、push、PR、mergeは未実施。package-lock.jsonは変更なし。開発サーバーは`http://127.0.0.1:5173`で起動中
 
+## Session 007
+
+- Date: 2026-07-19 (Asia/Tokyo)
+- Goal: Submission Readiness Phase 1 — GitHub Pages公開設定と提出用リポジトリ文書を準備する
+- Starting state: `main`と`v0.3.0-m2.1`はmerge commit `6bdd2be`で一致。`feat/submission-readiness`を作成し、originへpush済み。working treeはclean
+- Model: Not available to the session
+- Reasoning level: Not available
+- Codex session ID: Not available
+- Files changed: vite.config.ts, package.json, README.md, LICENSE, .github/workflows/deploy-pages.yml, docs/DEVPOST_DRAFT.md, docs/VIDEO_SCRIPT.md, docs/SUBMISSION_CHECKLIST.md, BUILD_LOG.md
+- What Codex accelerated: GitHub Pages用base pathとActions workflow、英語中心README、MIT License、Devpost下書き、2分30秒前後の動画台本、提出チェックリスト、ローカル/production previewとブラウザ検証
+- Human decisions: Analyzer、Beginner Signals、Blocker選択、fixture判定をFeature Freezeで固定。GPT-5.6 Thinkingは製品方向と設計レビューに使用し、アプリへAPI統合しない。公開デモと提出文書だけを今回の対象にする
+- Tests performed: `npm test`, `npm run typecheck`, `npm run build`, `npm run dev`, `npm run preview`, production base path asset check、Playwright desktop/mobile/console check、`git diff --check`
+- Credits before: Not available
+- Credits after: Not available
+- Result: 96 tests、typecheck、buildがPASS。dev rootは200、previewの`/gearshift/`は200。JS/CSS/faviconはすべてPages想定パスで200。1440x900と390x844で主要3入力を確認し、390px水平overflowなし、console errors 0 / warnings 0。判定ロジックとpackage-lock.jsonは変更なし
+- Next step: GitHub SettingsでPages sourceをGitHub Actionsに設定し、mainへ反映後の公開URLを確認。スクリーンショット、動画、Devpost、最終提出証跡を人間が確定する
+
 ## Session template
 
 ```markdown
