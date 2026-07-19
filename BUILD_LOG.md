@@ -283,6 +283,23 @@
 - Result: Created a 1280×720 English thumbnail and three English full-page screenshots: 1440px responsive UI desktop, 1440px scene state loss desktop, and 390px scene state loss mobile. The blocker cards are expanded, the scene-state screenshots show `Copied`, and the Devpost draft now points to the English assets
 - Next step: Upload the thumbnail and three screenshots to the OpenAI hackathon page, then review the platform crop and text legibility before final submission
 
+## Session 014
+
+- Date: 2026-07-19 (Asia/Tokyo)
+- Goal: Correct the remaining pre-English wording in the public README before final submission
+- Starting state: `main` was synchronized with the merged submission-assets PR. The English UI, screenshots, video script, and frozen analyzer behavior were already present
+- Model: Not available to the session
+- Reasoning level: Not available
+- Codex session ID: Not available
+- Files changed: `README.md`, `BUILD_LOG.md`
+- What Codex accelerated: README fact-checking against the public English UI, translation of the three demo inputs, and final validation before the Pages redeploy
+- Human decisions: Keep the Feature Freeze boundary. Change documentation only: fixture count, public demo wording, expected guidance labels, and the language limitation statement
+- Tests performed: `npm test`, `npm run typecheck`, `npm run build`
+- Credits before: Not available
+- Credits after: Not available
+- Result: README now states 31 reproducible fixtures, uses the three exact English public demo inputs, shows the current English guidance labels, and describes the public UI as English-first without a language toggle
+- Next step: Commit and push the documentation correction, confirm the Pages redeploy, and complete final submission
+
 ## Session template
 
 ```markdown

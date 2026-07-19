@@ -37,15 +37,15 @@ Gearshift translates that language into an explainable next step without pretend
 3. The Blocker Guide ranks Godot-specific failure modes and limits duplicate blocker families.
 4. The UI presents the recommended action, first step, stop conditions, checks, and a safe prompt for Codex.
 
-The repository contains 21 reproducible task fixtures, 16 Godot-specific blockers, and regression tests for the M2.1 beginner-language calibration.
+The repository contains 31 reproducible task fixtures, 16 Godot-specific blockers, and regression tests for the M2.1 beginner-language calibration.
 
 ## Three demo tasks
 
 | Input | Expected guidance | Godot-specific route |
 | --- | --- | --- |
-| `ダイス結果の表示だけを3からTRIPLEへ変えたい` | Move fast | Display-only change; UI text/visual verification |
-| `画面サイズを変えるとボタンが変な場所に行く` | Move with checks | UI Anchor / Container |
-| `シーンを変えたらコインが0になった` | Move carefully | Scene state loss; preserve and verify shared state |
+| `Change only the dice result label from "3" to "TRIPLE".` | Proceed directly | Display-only change; UI text/visual verification |
+| `The button moves to the wrong position when the screen size changes.` | Proceed with checks | UI anchors and containers |
+| `The coin count resets to zero after changing scenes.` | Create a restore point and proceed carefully | State loss during scene changes; preserve and verify shared state |
 
 These three inputs show the intended change in gear: low-risk wording, a common Godot UI integration problem, and a potentially destructive state problem.
 
@@ -127,7 +127,7 @@ The human decisions were to focus on Godot 4.x, keep the MVP local-first and exp
 - Rules are deterministic and explainable, not a claim of objective optimality.
 - The app does not edit Godot projects or execute Codex tasks.
 - There is no Godot Editor integration, backend, authentication, database, or external AI API.
-- The current UI is Japanese-first, while this README and submission material are English-centered.
+- The public demo UI is English-first and currently presents one language without a language toggle.
 - Platform export advice is guidance; the app does not build or run an Android or desktop Godot export.
 - Beginner phrasing coverage is intentionally bounded by explicit signals and fixtures.
 
