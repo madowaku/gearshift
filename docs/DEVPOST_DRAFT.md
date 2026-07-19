@@ -87,9 +87,10 @@ Open the Vite development URL for local development. For the production preview 
 
 ## Submission screenshots
 
-- `docs/screenshots/public-responsive-ui-desktop.png` — the balanced route for a responsive UI problem.
-- `docs/screenshots/public-scene-state-loss-desktop.png` — the deep route for scene state loss, with the top Blocker expanded and the prompt copied.
-- `docs/screenshots/public-scene-state-loss-mobile-390.png` — the same careful route at a 390px viewport.
+- `docs/screenshots/gearshift-build-week-thumbnail-english.png` — 1280×720 English project thumbnail for the hackathon page.
+- `docs/screenshots/public-responsive-ui-english-desktop.png` — the balanced route for a responsive UI problem.
+- `docs/screenshots/public-scene-state-loss-english-desktop.png` — the deep route for scene state loss, with the top Blocker expanded and the Copy control showing `Copied`.
+- `docs/screenshots/public-scene-state-loss-english-mobile-390.png` — the same careful route at a 390px viewport, also showing `Copied`.
 
 ## Public demo verification
 
