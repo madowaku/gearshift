@@ -35,6 +35,7 @@ Codex Gearshiftはタスクをゲーム開発固有の軸で分解し、制作�
 | Explainability | matched signals / reasons / confidence / escalation conditions |
 | Verification | 順序付きの具体的手順 |
 | Workflow guidance | 制作者向けの進め方、短い説明、最初の具体的行動 |
+| Blocker guide | 関連度順の最大3件、表示理由、最初の行動、落とし穴、確認、停止条件、安全なCodex依頼文 |
 
 ### Presentation policy
 
@@ -88,6 +89,14 @@ MVPは説明可能な決定論的ルールを主系とします。カテゴリ�
 
 各結果には発火したrule IDを `matchedSignals` として残します。confidenceは一致した明示ルールの量と安全ゲートの有無から決定論的に算出する説明補助であり、統計的な正解確率ではありません。
 
+### M2 Blocker selection
+
+BlockerはGodot固有の詰まり方を表す静的データで、`id`、関連カテゴリ、対応signal、明示phrase、難易度、最初の行動、落とし穴、確認、停止条件、安全な依頼文、関連Blocker IDを持ちます。
+
+選択はタスク文の明示phrase一致、M1のsignal一致、カテゴリ一致をこの順に強く評価します。phraseまたはsignalの強い一致がない候補は表示せず、score降順、同点時はデータ定義順で最大3件に固定します。同じ入力と分析結果から、同じ候補・順序・依頼文を返します。関連度は統計的な正解確率ではなく、ルール一致の強さです。
+
+安全なCodex依頼文には目的、既知の状態、変更範囲、既存構造を先に確認する指示、実装後の検証を含めます。不明点を推測した破壊的変更、GitHubへのpush、file削除、大規模refactorは禁止し、範囲が広がる場合は停止して報告させます。
+
 ## 5. Technical architecture
 
 - Vite + TypeScriptの単一ページWebアプリ
@@ -122,11 +131,12 @@ MVPは説明可能な決定論的ルールを主系とします。カテゴリ�
 - 4リスク、5検証flag、profile、reasoning、rule ID付き根拠、confidence、escalation条件を表示する
 - SaveLoad/Physics/UI/Exportを含む13 fixtureで期待判定をテストする
 
-### M2 — Routing Lab
+### M2 — Godot Blocker Guide
 
-- fast/balanced/deepの対応を設定で切り替えられる
-- 代表タスクを一括評価し、JSON/Markdownへ出力できる
-- 同じ入力と設定から同じ結果を再現できる
+- 12件以上のGodot固有Blockerから、入力に強く関連する最大3件を選ぶ
+- 表示理由、最初の行動、落とし穴、確認、停止条件を展開カードで示す
+- 検証条件と安全境界を含むCodex依頼文をコピーできる
+- 同じ入力と分析結果から同じBlockerと順序を再現できる
 
 ### M3 — Demo Polish
 
@@ -148,8 +158,8 @@ MVPは説明可能な決定論的ルールを主系とします。カテゴリ�
 - API/通信トラブル: 決定論的ローカル判定をデモの主系にする
 - 提出証拠不足: 各セッションでBUILD_LOGを更新する
 
-## 9. Open decisions for M1
+## 9. Open decisions after M2
 
-- ルールの重みと、安全ゲートの閾値
+- Blockerの関連度と文言を初心者の実タスクで校正する手順
 - モデルプロファイル設定の初期対応（利用可能なCodexモデルを実験開始時に確認）
-- fixtureの正解ラベルを一人で校正する手順
+- 安全な依頼文を次のM3デモ導線でどう再利用するか

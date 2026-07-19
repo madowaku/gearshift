@@ -80,4 +80,29 @@ describe("Gearshift deterministic analyzer", () => {
     expect(result.guidance.title).toBe(title);
     expect(result.guidance.firstAction.length).toBeGreaterThan(0);
   });
+
+  it.each(taskFixtures.filter((taskFixture) => taskFixture.expectedCreatorSignal))(
+    "calibrates beginner language for $id",
+    (taskFixture) => {
+      const result = analyzeTask(taskFixture.input);
+      expect(result.guidance.title).toBe(taskFixture.expectedGuidance);
+      expect(result.creatorSignals.map((signal) => signal.id)).toContain(taskFixture.expectedCreatorSignal);
+
+      for (const [check, expected] of Object.entries(taskFixture.expectedVerificationFlags ?? {})) {
+        expect(result.verification[check as keyof typeof result.verification]).toBe(expected);
+      }
+    },
+  );
+
+  it("keeps beginner signal metadata explainable", () => {
+    for (const taskFixture of taskFixtures.filter((candidate) => candidate.expectedCreatorSignal)) {
+      const signal = analyzeTask(taskFixture.input).creatorSignals.find(
+        (candidate) => candidate.id === taskFixture.expectedCreatorSignal,
+      );
+      expect(signal?.phrases.length).toBeGreaterThan(0);
+      expect(signal?.relatedCategories.length).toBeGreaterThan(0);
+      expect(signal?.preferredBlockerIds.length).toBeGreaterThan(0);
+      expect(signal?.matchedReason).not.toBe("");
+    }
+  });
 });

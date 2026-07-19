@@ -1,5 +1,7 @@
 import "./style.css";
 import { analyzeTask } from "./analyzer";
+import { selectBlockers } from "./blockers";
+import type { BlockerMatch } from "./blockers";
 import type { GearshiftRecommendation, RiskAssessment, VerificationRequirements } from "./domain";
 import { taskFixtures } from "./fixtures";
 
@@ -11,7 +13,7 @@ app.innerHTML = `
   <main class="shell">
     <header class="hero">
       <div>
-        <p class="eyebrow">OPENAI BUILD WEEK · M1 ANALYZER</p>
+        <p class="eyebrow">OPENAI BUILD WEEK · M2 BLOCKER GUIDE</p>
         <h1>Codex <span>Gearshift</span></h1>
       </div>
       <p class="lead">Godotの実装タスクから危険信号を拾い、次の進め方と確認手順へ変速します。</p>
@@ -84,6 +86,18 @@ app.innerHTML = `
           <h2>立ち止まって見直す条件</h2>
           <ul id="escalations" class="plain-list"></ul>
         </article>
+
+        <article class="panel blocker-guide-panel">
+          <div class="section-heading">
+            <div>
+              <p class="step">06 · BLOCKER GUIDE</p>
+              <h2>この作業で詰まりやすいところ</h2>
+            </div>
+            <span id="blocker-count" class="status"></span>
+          </div>
+          <p class="blocker-intro">入力したタスクに強く関係する注意点だけを、最大3件表示します。</p>
+          <div id="blocker-cards" class="blocker-list"></div>
+        </article>
       </section>
     </section>
   </main>
@@ -129,7 +143,89 @@ const renderTextList = (element: HTMLElement, items: string[]) => {
   );
 };
 
-const renderResult = (result: GearshiftRecommendation) => {
+const copyPrompt = async (text: string) => {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const temporary = document.createElement("textarea");
+  temporary.value = text;
+  temporary.setAttribute("readonly", "");
+  temporary.className = "copy-fallback";
+  document.body.append(temporary);
+  temporary.select();
+  const copied = document.execCommand("copy");
+  temporary.remove();
+  if (!copied) throw new Error("Copy was not available");
+};
+
+const makeBlockerSection = (title: string, items: string[]) => {
+  const section = document.createElement("section");
+  section.className = "blocker-section";
+  const heading = document.createElement("h3");
+  heading.textContent = title;
+  const list = document.createElement("ul");
+  renderTextList(list, items);
+  section.append(heading, list);
+  return section;
+};
+
+const makeBlockerCard = (match: BlockerMatch, index: number) => {
+  const details = document.createElement("details");
+  details.className = "blocker-card";
+  details.open = index === 0;
+
+  const summary = document.createElement("summary");
+  const summaryText = document.createElement("span");
+  const title = document.createElement("strong");
+  title.textContent = match.blocker.title;
+  const why = document.createElement("small");
+  why.textContent = match.reasons.join(" · ");
+  summaryText.append(title, why);
+  const relevance = document.createElement("span");
+  relevance.className = "relevance";
+  relevance.textContent = `関連度 ${match.relevance}`;
+  summary.append(summaryText, relevance);
+
+  const body = document.createElement("div");
+  body.className = "blocker-body";
+  const overview = document.createElement("p");
+  overview.className = "blocker-summary";
+  overview.textContent = match.blocker.summary;
+  const grid = document.createElement("div");
+  grid.className = "blocker-grid";
+  grid.append(
+    makeBlockerSection("最初にやること", match.blocker.firstSteps),
+    makeBlockerSection("詰まりやすいところ", match.blocker.commonPitfalls),
+    makeBlockerSection("次に確認すること", match.blocker.verificationSteps),
+    makeBlockerSection("立ち止まる条件", match.blocker.stopConditions),
+  );
+
+  const promptHeading = document.createElement("h3");
+  promptHeading.textContent = "Codexへ渡す依頼文";
+  const prompt = document.createElement("pre");
+  prompt.className = "prompt-box";
+  prompt.textContent = match.safeCodexPrompt;
+  const copyButton = document.createElement("button");
+  copyButton.type = "button";
+  copyButton.className = "copy-button";
+  copyButton.textContent = "Copy prompt";
+  copyButton.addEventListener("click", async () => {
+    try {
+      await copyPrompt(match.safeCodexPrompt);
+      copyButton.textContent = "Copied";
+    } catch {
+      copyButton.textContent = "Copy failed";
+    }
+  });
+
+  body.append(overview, grid, promptHeading, prompt, copyButton);
+  details.append(summary, body);
+  return details;
+};
+
+const renderResult = (result: GearshiftRecommendation, description: string) => {
   app.dataset.profile = result.recommendedProfile;
   get("guidance-title").textContent = result.guidance.title;
   get("guidance-summary").textContent = result.guidance.summary;
@@ -188,6 +284,18 @@ const renderResult = (result: GearshiftRecommendation) => {
 
   renderTextList(get("steps"), result.verification.steps);
   renderTextList(get("escalations"), result.escalationConditions);
+
+  const blockers = selectBlockers({ description, godotVersion: "4.x" }, result);
+  get("blocker-count").textContent = `${blockers.length} / 3`;
+  const blockerCards = get("blocker-cards");
+  if (blockers.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "blocker-empty";
+    empty.textContent = "このタスクに強く関連するBlockerはありません。現在の確認手順から進めます。";
+    blockerCards.replaceChildren(empty);
+  } else {
+    blockerCards.replaceChildren(...blockers.map(makeBlockerCard));
+  }
 };
 
 for (const fixture of taskFixtures) {
@@ -203,7 +311,7 @@ const selectFixture = (id: string) => {
   const fixture = taskFixtures.find((candidate) => candidate.id === id) ?? taskFixtures[0];
   fixtureSelect.value = fixture.id;
   taskInput.value = fixture.input.description;
-  renderResult(analyzeTask(fixture.input));
+  renderResult(analyzeTask(fixture.input), fixture.input.description);
 };
 
 fixtureSelect.addEventListener("change", () => {
@@ -217,7 +325,8 @@ taskInput.addEventListener("input", () => {
 });
 form.addEventListener("submit", (event) => {
   event.preventDefault();
-  renderResult(analyzeTask({ description: taskInput.value, godotVersion: "4.x" }));
+  const description = taskInput.value;
+  renderResult(analyzeTask({ description, godotVersion: "4.x" }), description);
 });
 
 selectFixture(taskFixtures[0].id);
