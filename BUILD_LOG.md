@@ -181,6 +181,40 @@
 - Result: 96 tests、typecheck、buildがPASS。dev rootは200、previewの`/gearshift/`は200。JS/CSS/faviconはすべてPages想定パスで200。1440x900と390x844で主要3入力を確認し、390px水平overflowなし、console errors 0 / warnings 0。判定ロジックとpackage-lock.jsonは変更なし
 - Next step: GitHub SettingsでPages sourceをGitHub Actionsに設定し、mainへ反映後の公開URLを確認。スクリーンショット、動画、Devpost、最終提出証跡を人間が確定する
 
+## Session 008
+
+- Date: 2026-07-19 (Asia/Tokyo)
+- Goal: 公開版の最終3入力確認と、Devpost提出用スクリーンショットを保存する
+- Starting state: 公開URL `https://madowaku.github.io/gearshift/`がデプロイ済み。READMEのLive Demo URLは同一URLを記載済み
+- Model: Not available to the session
+- Reasoning level: Not available
+- Codex session ID: Not available
+- Files changed: docs/DEVPOST_DRAFT.md, docs/screenshots/public-display-only-desktop.png, docs/screenshots/public-responsive-ui-desktop.png, docs/screenshots/public-scene-state-loss-desktop.png, docs/screenshots/public-scene-state-loss-mobile-390.png, BUILD_LOG.md
+- What Codex accelerated: 公開URLの3入力スモーク確認、Blocker展開とCopy操作の確認、390px表示とreload確認、Devpost素材の保存とドラフトへの紐付け
+- Human decisions: Feature Freeze済みの3デモ入力だけを確認し、Analyzer・Blocker・fixture判定は変更しない。外部Devpostフォームへの入力・公開はまだ行わない
+- Tests performed: Playwrightで公開URLを1440x900と390x844で確認、3入力のguidance/profile/Top 1 Blockerを比較、各Top 1 Blockerの展開とCopy=`Copied`を確認、Pages asset path、reload、console確認、スクリーンショット目視確認、`git diff --check`
+- Credits before: Not available
+- Credits after: Not available
+- Result: 表示変更はfast / UI崩れはbalanced / scene状態消失はdeep。Top 1は順にUI AnchorとContainer、UI AnchorとContainer、Scene切り替え時の状態消失。3件ともBlocker展開とCopyが成功。390pxで水平・Blocker・prompt overflowなし、reload後も初期fixtureと結果が表示され、console errors 0 / warnings 0。Devpostドラフトに4枚のスクリーンショットと確認結果を追記
+- Next step: Devpostの各欄へ`docs/DEVPOST_DRAFT.md`を入力し、動画・`/feedback` Session ID・最終提出確認を人間が確定する
+
+## Session 009
+
+- Date: 2026-07-19 (Asia/Tokyo)
+- Goal: 提出スクリーンショットを通常リスク、重大リスク、モバイル対応の3枚へ絞り、提出準備を保存する
+- Starting state: Session 008で公開版の4枚を確認済み。Display-onlyはfastだがTop 1のUI AnchorとContainerが説明上弱いため、判定ロジックは再開しない
+- Model: Not available to the session
+- Reasoning level: Not available
+- Codex session ID: Not available
+- Files changed: docs/DEVPOST_DRAFT.md, docs/SUBMISSION_CHECKLIST.md, docs/screenshots/public-display-only-desktop.png（削除）, BUILD_LOG.md
+- What Codex accelerated: 提出素材の選別、Devpostドラフトとチェックリストの整合、不要なDisplay-only画像の除外
+- Human decisions: 提出画像はResponsive UI desktop、Scene state loss desktop、Scene state loss mobileの3枚に限定。Display-onlyの判定ロジックやAnalyzer/Blockerは変更しない
+- Tests performed: `git status`, `git diff --check`、提出画像の存在確認
+- Credits before: Not available
+- Credits after: Not available
+- Result: Devpostドラフトとチェックリストを3枚構成へ更新し、Display-only画像を削除。公開URL、README、判定ロジック、package-lock.jsonは変更なし
+- Next step: 指定commit・push・PRを実行し、PR確認後にmainへマージする
+
 ## Session template
 
 ```markdown

@@ -22,9 +22,9 @@
 
 ## Evidence
 
-- [ ] Screenshots: display-only fast route
 - [ ] Screenshots: responsive UI / Anchor / Container route
-- [ ] Screenshots: scene state loss / careful route
+- [ ] Screenshots: scene state loss / careful route on desktop
+- [ ] Screenshots: scene state loss / careful route at 390px mobile width
 - [ ] Public YouTube video under 3 minutes
 - [ ] Video includes audio explanation of Codex and GPT-5.6 usage
 - [ ] Video shows the three frozen demo inputs
@@ -47,4 +47,3 @@
 - [ ] Final test result recorded
 - [ ] Final browser and mobile check recorded
 - [ ] Submission confirmation saved
-
