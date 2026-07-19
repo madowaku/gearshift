@@ -1,0 +1,15 @@
+Beginners do not describe Godot problems in engine terms. They say: the button does nothing, the button moves, or my coins disappeared. The right next step is different for each one. Codex Gearshift turns plain language into a safe next move, likely Godot blockers, and a verification plan.
+
+Gearshift is local-first and deterministic. It does not send the task to an API. It keeps the internal route in the background and gives creators a clear order: what to do first, what to watch, what to check, and when to stop.
+
+First, a display-only request: change the dice result label from three to TRIPLE. The internal value and game logic stay the same, so Gearshift says proceed directly. The check is visual: confirm the text wraps and remains readable.
+
+Now a common UI problem: the button moves to the wrong position when the screen size changes. The beginner description is translated into a responsive UI signal. Gearshift says proceed with checks and points to UI anchors and containers. We verify small, standard, and wide viewports.
+
+Finally, the dangerous case: the coin count resets to zero after changing scenes. This is shared game state. Gearshift raises the route to create a restore point and proceed carefully. It identifies state loss during scene changes, asks us to trace state ownership before and after the transition, and sets stop conditions if the rollback path is unclear.
+
+The blocker guide gives a focused safe Codex prompt. It includes the task, the current signal, the safe scope, the first checks, and the verification steps. Copying the prompt accelerates implementation, but the creator still reviews the result.
+
+Codex accelerated the Vite and TypeScript implementation, deterministic analyzer, Godot Blocker Guide, beginner signals, fixtures, tests, browser validation, and responsive checks. GPT-5.6 Thinking was used for product direction and review: the creator-first navigator, the beginner audience, Godot-specific risks, calibration criteria, feature freeze, and submission plan. GPT-5.6 is not an API inside this app.
+
+Gearshift helps beginners move quickly when it is safe, check the right boundary when they are stuck, and slow down before state or save data is lost. It is explainable, local-first, and ready to try in the browser.

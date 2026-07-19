@@ -16,7 +16,7 @@ Target length: approximately 2 minutes 30 seconds. The timestamp plan below ends
 
 ## 0:40 — Display-only change
 
-**Input:** `ダイス結果の表示だけを3からTRIPLEへ変えたい`
+**Input:** `Change only the dice result label from "3" to "TRIPLE".`
 
 **On screen:** Select the fixture and show the fast guidance.
 
@@ -24,7 +24,7 @@ Target length: approximately 2 minutes 30 seconds. The timestamp plan below ends
 
 ## 1:05 — UI layout problem
 
-**Input:** `画面サイズを変えるとボタンが変な場所に行く`
+**Input:** `The button moves to the wrong position when the screen size changes.`
 
 **On screen:** Analyze the task and open the UI Anchor / Container blocker.
 
@@ -32,7 +32,7 @@ Target length: approximately 2 minutes 30 seconds. The timestamp plan below ends
 
 ## 1:30 — Scene state loss
 
-**Input:** `シーンを変えたらコインが0になった`
+**Input:** `The coin count resets to zero after changing scenes.`
 
 **On screen:** Analyze the task and show deep guidance, Scene state loss, stop conditions, and checks.
 
@@ -55,4 +55,20 @@ Target length: approximately 2 minutes 30 seconds. The timestamp plan below ends
 **On screen:** Return to the three result states or the public demo title.
 
 **Narration:** “Gearshift helps beginners move quickly when it is safe, check the right Godot boundary when they are stuck, and slow down before state or save data is lost. The result is explainable, local-first, and ready to try in the browser.”
+
+## Recorded screen cut
+
+- File: `docs/videos/gearshift-build-week-demo-final.mp4`
+- Duration: approximately 2:04
+- Frame: 1440×900, H.264 MP4
+- Audio: none; record or mix the narration before the final submission
+
+## English voiceover cut
+
+- File: `docs/videos/gearshift-build-week-demo-english-voiceover.mp4`
+- Duration: 117.184 seconds
+- Frame: 1440×810, 25 fps, H.264 MP4
+- Audio: English narration, AAC mono, generated locally with HyperFrames/Kokoro voice `af_nova`
+- Source: public English demo at `https://madowaku.github.io/gearshift/`
+- Coverage: English intro, three public demo tasks, blocker expansion, and `Copy` → `Copied`
 

@@ -249,6 +249,40 @@
 - Result: 96 tests passed. Typecheck and production build passed. The three public tasks display `Proceed directly`, `Proceed with checks`, and `Create a restore point and proceed carefully`; expected English blockers and non-empty safe prompts render. Copy changes to `Copied`, desktop and 390px layouts have no horizontal overflow, console errors 0 / warnings 0, and no Japanese text remains in the rendered fixture results
 - Next step: Human review of the English public UI; do not commit, push, merge, or deploy until review
 
+## Session 012
+
+- Date: 2026-07-19 (Asia/Tokyo)
+- Goal: Create an English voiceover version of the public Build Week demo video
+- Starting state: English UI is deployed at `https://madowaku.github.io/gearshift/`. Existing screen-only video `docs/videos/gearshift-build-week-demo-final.mp4` is preserved
+- Model: Not available to the session
+- Reasoning level: Not available
+- Codex session ID: Not available
+- Files changed: `docs/videos/gearshift-build-week-demo-english-voiceover.mp4`, `docs/videos/gearshift-build-week-demo-english-voiceover-script.txt`, `docs/VIDEO_SCRIPT.md`, `BUILD_LOG.md`
+- What Codex accelerated: English narration drafting, local Kokoro TTS generation through HyperFrames, public-page Playwright recording, H.264/AAC muxing with FFmpeg, duration/codec inspection, and visual spot checks
+- Human decisions: Keep the app feature-frozen. Use the same three public demo tasks and existing blocker behavior. Use a local TTS voice with no external AI API and keep the prior screen-only cut as a separate artifact
+- Tests performed: `npx hyperframes doctor`, `npx hyperframes tts --list`, local TTS generation, public demo Playwright recording, FFprobe stream inspection, frame spot checks at 0/40/80/117 seconds, and final H.264/AAC output inspection
+- Credits before: Not available
+- Credits after: Not available
+- Result: Generated `docs/videos/gearshift-build-week-demo-english-voiceover.mp4` with 1440×810 video, 25 fps, 117.184 seconds, H.264 video, and AAC mono narration. The video shows the English initial state, dice display-only task, responsive UI task, scene-state-loss task, blocker expansion, and `Copied` interaction. HyperFrames TTS and FFmpeg passed; HyperFrames Chrome rendering was not used because its optional headless shell was unavailable
+- Next step: Human review the English voiceover for pronunciation, pacing, and submission fit before uploading
+
+## Session 013
+
+- Date: 2026-07-19 (Asia/Tokyo)
+- Goal: Create English thumbnail and screenshots for the public OpenAI hackathon submission page
+- Starting state: The GitHub Pages demo at `https://madowaku.github.io/gearshift/` returned the English feature-frozen UI. Existing Japanese screenshots and video artifacts were preserved
+- Model: Not available to the session
+- Reasoning level: Not available
+- Codex session ID: Not available
+- Files changed: `docs/screenshots/gearshift-build-week-thumbnail-english.png`, `docs/screenshots/public-responsive-ui-english-desktop.png`, `docs/screenshots/public-scene-state-loss-english-desktop.png`, `docs/screenshots/public-scene-state-loss-english-mobile-390.png`, `docs/DEVPOST_DRAFT.md`, `BUILD_LOG.md`
+- What Codex accelerated: Public Pages verification, full-page Playwright capture at desktop and 390px mobile sizes, blocker-expanded submission views, visual inspection, and composition of a 1280×720 English thumbnail from the public demo
+- Human decisions: Use three English submission views: responsive UI desktop, scene state loss desktop, and scene state loss mobile. Exclude the display-only view because its Top 1 blocker is less natural for the submission story. Keep analyzer behavior and all frozen routing logic unchanged
+- Tests performed: Public Pages English snapshot, Playwright screenshot capture with the top Blocker expanded and Copy=`Copied`, `console warning` check (0 errors / 0 warnings), `ffprobe` dimension checks, visual inspection of all four images, and `git diff --check`
+- Credits before: Not available
+- Credits after: Not available
+- Result: Created a 1280×720 English thumbnail and three English full-page screenshots: 1440px responsive UI desktop, 1440px scene state loss desktop, and 390px scene state loss mobile. The blocker cards are expanded, the scene-state screenshots show `Copied`, and the Devpost draft now points to the English assets
+- Next step: Upload the thumbnail and three screenshots to the OpenAI hackathon page, then review the platform crop and text legibility before final submission
+
 ## Session template
 
 ```markdown
